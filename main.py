@@ -15,13 +15,36 @@ RANT = (
 )
 
 
+def validate_entry(text: str) -> str:
+    """Validate the entry against the contest rules.
+
+    The sealed scorer requires UTF-8 text of 1 to 400 characters that is
+    not only white space. Returns the cleaned text on success.
+    """
+    cleaned = text.strip()
+    if not cleaned:
+        raise ValueError("entry is empty or only whitespace")
+    if len(cleaned) > 400:
+        raise ValueError(
+            f"entry is {len(cleaned)} chars, exceeds the 400-char limit"
+        )
+    return cleaned
+
+
+def write_entry(text: str, path: str = "/output/entry.txt") -> int:
+    """Validate and write the entry, returning its character count."""
+    cleaned = validate_entry(text)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(cleaned)
+    return len(cleaned)
+
+
 def main() -> None:
-    text = RANT.strip()
-    assert 1 <= len(text) <= 400, f"rant is {len(text)} chars, must be 1-400"
-    os.makedirs("/output", exist_ok=True)
-    with open("/output/entry.txt", "w", encoding="utf-8") as f:
-        f.write(text)
-    print(f"Wrote {len(text)} characters to /output/entry.txt")
+    count = write_entry(RANT)
+    words = len(RANT.split())
+    print(f"Entry OK: {count} chars, {words} words (limit 400 chars)")
+    print(f"Wrote {count} characters to /output/entry.txt")
 
 
 if __name__ == "__main__":
